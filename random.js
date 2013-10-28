@@ -46,25 +46,23 @@ var adjustCanvasForDPI = function(canvas) {
 
 var renderers = [];
 
-var setGrayscalePixelFromRand = function(imageData, index, randFunc) {
-    var arrayIndex = index * 4,
-        brightness = pixel(randFunc());
-    imageData.data[arrayIndex] = brightness;
-    imageData.data[arrayIndex+1] = brightness;
-    imageData.data[arrayIndex+2] = brightness;
-    imageData.data[arrayIndex+3] = 255; // 255 = opaque.
+var setGrayscalePixelFromRand = function(array, index, randFunc) {
+    var brightness = pixel(randFunc());
+    array[index] = brightness;
+    array[index+1] = brightness;
+    array[index+2] = brightness;
+    array[index+3] = 255; // 255 = opaque.
 };
 renderers.push({
     name: 'grayscale',
     func: setGrayscalePixelFromRand
 });
 
-var setColorPixelFromRand = function(imageData, index, randFunc) {
-    var arrayIndex = index * 4;
-    imageData.data[arrayIndex] = pixel(randFunc());
-    imageData.data[arrayIndex+1] = pixel(randFunc());
-    imageData.data[arrayIndex+2] = pixel(randFunc());
-    imageData.data[arrayIndex+3] = 255; // 255 = opaque.
+var setColorPixelFromRand = function(array, index, randFunc) {
+    array[index] = pixel(randFunc());
+    array[index+1] = pixel(randFunc());
+    array[index+2] = pixel(randFunc());
+    array[index+3] = 255; // 255 = opaque.
 };
 renderers.push({
     name: 'color',
@@ -127,20 +125,21 @@ var getImageData;
 var renderNoiseToCanvas = function(canvas, config) {       
     // Look up the functions we should use for noise generation and rendering.
     var setPixel = _.find(renderers, function(item) {
-        return item.name == config.renderer;
+        return item.name === config.renderer;
     }).func;
     var noiseFunc = _.find(generators, function(item) {
-        return item.name == config.generator;
+        return item.name === config.generator;
     }).func;
 
     var width = canvas.width,
         height = canvas.height,
         // Get our temporary ImageData object.
-        imageData = getImageData();
+        imageData = getImageData(),
+        dataArray = imageData.data;
 
     for (i = 0, maxIndex = width * height; i < maxIndex; i++) {
         // Set a pixel's color value using the given number source.
-        setPixel(imageData, i, noiseFunc);
+        setPixel(dataArray, i * 4, noiseFunc);
     }
 
     // Write the new image data to the canvas.
